@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 
-from app.database.supabase import create_client, delete_client, get_clients
+from app.database.supabase import create_client, create_post, delete_client, get_clients
 from app.keyboards import clients_menu_keyboard, main_menu_keyboard
 
 router = Router()
@@ -13,6 +13,11 @@ router = Router()
 class ClientStates(StatesGroup):
     adding_client = State()
     deleting_client = State()
+
+
+class PostStates(StatesGroup):
+    selecting_client = State()
+    entering_caption = State()
 
 
 @router.message(CommandStart())
@@ -71,3 +76,36 @@ async def delete_client_handler(message: Message, state: FSMContext) -> None:
     delete_client(int(message.text.strip()))
     await state.clear()
     await message.answer('تم حذف العميل', reply_markup=clients_menu_keyboard())
+
+
+@router.message(lambda m: m.text == '📝 منشور جديد')
+async def new_post(message: Message, state: FSMContext) -> None:
+    result = get_clients()
+    clients = getattr(result, 'data', []) or []
+    if not clients:
+        await message.answer('لا يوجد عملاء.')
+        return
+    text = 'اختر العميل بإرسال الرقم:\n' + '\n'.join(f"{item['id']} - {item['name']}" for item in clients)
+    await state.set_state(PostStates.selecting_client)
+    await message.answer(text)
+
+
+@router.message(PostStates.selecting_client)
+async def select_post_client(message: Message, state: FSMContext) -> None:
+    await state.update_data(client_id=int(message.text.strip()))
+    await state.set_state(PostStates.entering_caption)
+    await message.answer('أرسل الكابشن')
+
+
+@router.message(PostStates.entering_caption)
+async def save_post(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    create_post({
+        'client_id': data['client_id'],
+        'caption': message.text,
+        'status': 'draft',
+        'media_type': 'text',
+        'media_paths': [],
+    })
+    await state.clear()
+    await message.answer('تم حفظ المنشور كمسودة', reply_markup=main_menu_keyboard())
