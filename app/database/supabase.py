@@ -31,3 +31,11 @@ def get_clients():
 
 def delete_client(client_id: int):
     return get_supabase().table('clients').delete().eq('id', client_id).execute()
+
+
+def create_post(data: dict):
+    return get_supabase().table('posts').insert(data).execute()
+
+
+def get_posts():
+    return get_supabase().table('posts').select('*').order('id').execute()
