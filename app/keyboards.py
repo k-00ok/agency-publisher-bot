@@ -11,3 +11,15 @@ def main_menu_keyboard() -> ReplyKeyboardMarkup:
         ],
         resize_keyboard=True,
     )
+
+
+def clients_menu_keyboard() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text='➕ إضافة عميل')],
+            [KeyboardButton(text='📋 عرض العملاء')],
+            [KeyboardButton(text='🗑 حذف عميل')],
+            [KeyboardButton(text='⬅️ رجوع')],
+        ],
+        resize_keyboard=True,
+    )
