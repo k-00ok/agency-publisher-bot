@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from aiogram import Dispatcher, Router
+from aiogram import Dispatcher
 
-_registered=False
-_start_router=Router(name="start")
+from app.handlers import router as start_router
+
+_registered = False
 
 
 def register_handlers(dp: Dispatcher) -> None:
     global _registered
     if _registered:
         return
-    dp.include_router(_start_router)
-    # additional routers are included here through the same pattern
-    _registered=True
+
+    dp.include_router(start_router)
+    _registered = True
