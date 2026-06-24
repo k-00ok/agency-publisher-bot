@@ -17,5 +17,17 @@ def get_supabase() -> Client:
         _client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
         return _client
     except Exception as exc:
-        _logger.exception("Failed to initialize Supabase client")
-        raise RuntimeError("Unable to initialize Supabase client") from exc
+        _logger.exception('Failed to initialize Supabase client')
+        raise RuntimeError('Unable to initialize Supabase client') from exc
+
+
+def create_client(name: str):
+    return get_supabase().table('clients').insert({'name': name}).execute()
+
+
+def get_clients():
+    return get_supabase().table('clients').select('*').order('id').execute()
+
+
+def delete_client(client_id: int):
+    return get_supabase().table('clients').delete().eq('id', client_id).execute()
